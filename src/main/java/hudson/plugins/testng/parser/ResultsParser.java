@@ -513,7 +513,7 @@ public class ResultsParser {
                      if (p.getName().equals(testMethod.getName())) {
                          List<String> thisParams = testMethod.getParameters();
                          List<String> pastParams = ((MethodResult)p).getParameters();
-                         if (thisParams.equals(pastParams)) {
+                         if ((thisParams == null) || (thisParams.equals(pastParams))) {
                              testMethod.setStatus(CaseResult.Status.REGRESSION);
                          }
                      }
@@ -530,7 +530,7 @@ public class ResultsParser {
                     if (f.getName().equals(testMethod.getName())){
                         List<String> thisParams = testMethod.getParameters();
                         List<String> pastParams = ((MethodResult)f).getParameters();
-                        if (thisParams.equals(pastParams)) {
+                        if ((thisParams == null) || (thisParams.equals(pastParams))) {
                             testMethod.setStatus(CaseResult.Status.FIXED);
                         }
                     }
