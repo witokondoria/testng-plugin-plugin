@@ -6,6 +6,10 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
@@ -15,8 +19,6 @@ import hudson.plugins.testng.results.MethodResult;
 import hudson.plugins.testng.results.TestNGResult;
 import hudson.tasks.junit.CaseResult;
 import hudson.tasks.test.AbstractTestResultAction;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * TestNG build action that exposes the results per build
@@ -94,7 +96,7 @@ public class TestNGTestResultBuildAction extends AbstractTestResultAction implem
         }
 
         ResultsParser parser = new ResultsParser(logger);
-        TestNGResult result = parser.parse(paths);
+        TestNGResult result = parser.parse(paths, owner);
         result.setOwner(owner);
         return result;
     }
@@ -178,9 +180,10 @@ public class TestNGTestResultBuildAction extends AbstractTestResultAction implem
             }
 
             public Status getStatus() {
-                //We don't calculate age of results currently
-                //so, can't state if the failure is a regression or not
-                return Status.FAILED;
+                if (methodResult.getStatus().equals("REGRESSION")) {
+                    return Status.REGRESSION;
+                } 
+                return Status.FAILED;                
             }
 
             public String getClassName() {

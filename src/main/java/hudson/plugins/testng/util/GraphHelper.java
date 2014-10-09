@@ -1,17 +1,12 @@
 package hudson.plugins.testng.util;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Paint;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import hudson.plugins.testng.PluginImpl;
-import hudson.plugins.testng.TestNGTestResultBuildAction;
-import hudson.util.ChartUtil.NumberOnlyBuildLabel;
-import hudson.util.ColorPalette;
-import hudson.util.ShiftedCategoryAxis;
-import hudson.util.StackedAreaRenderer2;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -29,6 +24,13 @@ import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+
+import hudson.plugins.testng.PluginImpl;
+import hudson.plugins.testng.TestNGTestResultBuildAction;
+import hudson.util.ChartUtil.NumberOnlyBuildLabel;
+import hudson.util.ColorPalette;
+import hudson.util.ShiftedCategoryAxis;
+import hudson.util.StackedAreaRenderer2;
 
 /**
  * Helper class for trend graph generation
@@ -179,8 +181,10 @@ public class GraphHelper {
 
          {
             statusPaintMap.put("PASS", ColorPalette.BLUE);
+            statusPaintMap.put("FIXED", ColorPalette.BLUE);
             statusPaintMap.put("SKIP", ColorPalette.YELLOW);
             statusPaintMap.put("FAIL", ColorPalette.RED);
+            statusPaintMap.put("REGRESSION", ColorPalette.RED);
          }
 
          /**

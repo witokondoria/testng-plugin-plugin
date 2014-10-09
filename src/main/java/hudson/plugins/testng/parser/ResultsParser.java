@@ -10,6 +10,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -17,16 +18,20 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import hudson.plugins.testng.results.ClassResult;
 import hudson.plugins.testng.results.MethodResult;
 import hudson.plugins.testng.results.MethodResultException;
 import hudson.plugins.testng.results.PackageResult;
 import hudson.plugins.testng.results.TestNGResult;
 import hudson.plugins.testng.results.TestNGTestResult;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
+import hudson.tasks.junit.CaseResult;
+import hudson.tasks.test.TestResult;
 
 /**
  * Parses TestNG result XMLs generated using org.testng.reporters.XmlReporter
@@ -125,13 +130,14 @@ public class ResultsParser {
     * @param paths a file hopefully containing test related data in correct format
     * @return a collection of test results
     */
-   public TestNGResult parse(FilePath[] paths) {
+   public TestNGResult parse(FilePath[] paths, AbstractBuild<?, ?> owner) {
       if (null == paths) {
          log("File paths not specified. paths var is null. Returning empty test results.");
          return new TestNGResult();
       }
 
       finalResults = new TestNGResult();
+      finalResults.setOwner(owner);
 
       for (FilePath path : paths) {
          File file = new File(path.getRemote());
@@ -426,7 +432,7 @@ public class ResultsParser {
       currentMethod = new MethodResult(name, status, description, duration,
          startedAtDate == null ? -1 : startedAtDate.getTime(),
          isConfig, currentTestRunId, currentTest.getName(),
-         currentSuite, testInstanceName);
+         currentSuite, testInstanceName, finalResults);
       List<String> groups = methodGroupMap.get(currentClass.getCanonicalName() + "|" + name);
       if (groups != null) {
          currentMethod.setGroups(groups);
@@ -499,10 +505,37 @@ public class ResultsParser {
          }
       } else {
          if ("FAIL".equals(testMethod.getStatus())) {
+             //If its a newly failed method, change its status to CaseResult.Status.REGRESSION 
+             if ((testMethod.getAge() == 1) && (testMethod.getParent().getOwner().getPreviousBuild() != null) && 
+                    (testMethod.getParent().getOwner().getPreviousBuild().getTestResultAction() != null)) {                 
+                 Collection<? extends TestResult> passed = ((TestNGResult)testMethod.getParent().getOwner().getPreviousBuild().getTestResultAction().getResult()).getPassedTests();
+                 for (TestResult p : passed) {
+                     if (p.getName().equals(testMethod.getName())) {
+                         List<String> thisParams = testMethod.getParameters();
+                         List<String> pastParams = ((MethodResult)p).getParameters();
+                         if (thisParams.equals(pastParams)) {
+                             testMethod.setStatus(CaseResult.Status.REGRESSION);
+                         }
+                     }
+                 }                
+             }
             finalResults.getFailedTests().add(testMethod);
          } else if ("SKIP".equals(testMethod.getStatus())) {
             finalResults.getSkippedTests().add(testMethod);
-         } else if ("PASS".equals(testMethod.getStatus())) {
+         } else if ("PASS".equals(testMethod.getStatus())) {             
+             if ((testMethod.getAge() == 1) && (testMethod.getParent().getOwner().getPreviousBuild() != null) && 
+                     (testMethod.getParent().getOwner().getPreviousBuild().getTestResultAction() != null)) {                 
+                Collection<? extends TestResult> failed = ((TestNGResult)testMethod.getParent().getOwner().getPreviousBuild().getTestResultAction().getResult()).getFailedTests();
+                for (TestResult f: failed) {
+                    if (f.getName().equals(testMethod.getName())){
+                        List<String> thisParams = testMethod.getParameters();
+                        List<String> pastParams = ((MethodResult)f).getParameters();
+                        if (thisParams.equals(pastParams)) {
+                            testMethod.setStatus(CaseResult.Status.FIXED);
+                        }
+                    }
+                }                
+             }
             finalResults.getPassedTests().add(testMethod);
          }
       }

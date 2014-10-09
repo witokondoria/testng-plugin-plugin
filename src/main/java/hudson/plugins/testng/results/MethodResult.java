@@ -1,19 +1,26 @@
 package hudson.plugins.testng.results;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import hudson.model.AbstractBuild;
-import hudson.plugins.testng.TestNGTestResultBuildAction;
-import hudson.plugins.testng.util.GraphHelper;
-import hudson.tasks.test.TestResult;
-import hudson.util.ChartUtil;
-import hudson.util.DataSetBuilder;
-import hudson.util.Graph;
 import org.jfree.chart.JFreeChart;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+
+import hudson.model.AbstractBuild;
+import hudson.plugins.testng.TestNGTestResultBuildAction;
+import hudson.plugins.testng.util.GraphHelper;
+import hudson.tasks.junit.CaseResult.Status;
+import hudson.tasks.test.TestResult;
+import hudson.util.ChartUtil;
+import hudson.util.DataSetBuilder;
+import hudson.util.Graph;
 
 /**
  * Handles result pertaining to a single test method
@@ -68,8 +75,10 @@ public class MethodResult extends BaseResult {
                         String testRunId,
                         String parentTestName,
                         String parentSuiteName,
-                        String testInstanceName) {
+                        String testInstanceName,
+                        TestNGResult currentTest) {
         super(name);
+        this.setParent(currentTest);
         this.status = status;
         this.description = description;
         // this uuid is used later to group the tests and config-methods together
@@ -392,13 +401,13 @@ public class MethodResult extends BaseResult {
      */
     public Object getCssClass() {
         if (this.status != null) {
-            if (this.status.equalsIgnoreCase("pass")) {
+            if (this.status.equalsIgnoreCase("pass") || this.status.equalsIgnoreCase("fixed")) {
                 return "result-passed";
             } else {
                 if (this.status.equalsIgnoreCase("skip")) {
                     return "result-skipped";
                 } else {
-                    if (this.status.equalsIgnoreCase("fail")) {
+                    if (this.status.equalsIgnoreCase("fail") || this.status.equalsIgnoreCase("regression")) {
                         return "result-failed";
                     }
                 }
@@ -429,5 +438,9 @@ public class MethodResult extends BaseResult {
     @Override
     public boolean hasChildren() {
         return false;
+    }
+    
+    public void setStatus (Status status) {
+        this.status = status.name();
     }
 }

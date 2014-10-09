@@ -1,11 +1,15 @@
 package hudson.plugins.testng;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+
 import hudson.FilePath;
 import hudson.plugins.testng.parser.ResultsParser;
 import hudson.plugins.testng.results.TestNGResult;
-
-import java.io.*;
-import java.net.URL;
 
 /**
  * Common utility methods
@@ -15,7 +19,7 @@ import java.net.URL;
 public class CommonUtil {
 
     public static URL getResource(String filepath) {
-       return CommonUtil.class.getClassLoader().getResource(filepath);
+        return CommonUtil.class.getClassLoader().getResource(filepath);
     }
 
     public static String getContents(String filepath) throws IOException {
@@ -34,9 +38,9 @@ public class CommonUtil {
     }
 
     public static TestNGResult getResults(String filepath) {
-       ResultsParser parser = new ResultsParser();
-       FilePath[] filePaths = new FilePath[1];
-       filePaths[0] = new FilePath(new File(filepath));
-       return parser.parse(filePaths);
+        ResultsParser parser = new ResultsParser();
+        FilePath[] filePaths = new FilePath[1];
+        filePaths[0] = new FilePath(new File(filepath));
+        return parser.parse(filePaths, null);
     }
 }

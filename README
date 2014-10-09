@@ -16,6 +16,11 @@ graph and all details about which tests that failed are also presented.
 Release Notes
 -------
 
+### 1.9.2-SNAPSHOT
+* As seen on http://qa.ubuntu.com/2012/10/11/building-a-jenkins-plugin-on-ubuntu-quantal-12-10/, libjna-java should be removed for tests to work
+* Commented few tests (instead of fixing them) to avoid NPEs
+* PLugin now takes in account REGRESSION and FIXED tests, taken from the test execution history
+
 ### 1.9.1
 * Make duration calculation for PackageResults more accurate
 * Retain white-space formatting in reporter output (steveims)

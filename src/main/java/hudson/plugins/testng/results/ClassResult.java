@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import hudson.model.AbstractBuild;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+
+import hudson.model.AbstractBuild;
 
 /**
  * Handle results related to a single test class
@@ -137,7 +138,7 @@ public class ClassResult extends BaseResult {
 
         for (MethodResult methodResult : this.testMethodList) {
             if (!methodResult.isConfig()) {
-                if ("FAIL".equals(methodResult.getStatus())) {
+                if ("FAIL".equals(methodResult.getStatus()) || "REGRESSION".equals(methodResult.getStatus())) {
                     this.fail++;
                 } else if ("SKIP".equals(methodResult.getStatus())) {
                     this.skip++;
