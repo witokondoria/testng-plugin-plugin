@@ -460,60 +460,71 @@ public class ResultsParser {
     }
 
     private void updateTestMethodLists(MethodResult testMethod) {
-      if (testMethod.isConfig()) {
-         if ("FAIL".equals(testMethod.getStatus())) {
-            finalResults.getFailedConfigs().add(testMethod);
-         } else if ("SKIP".equals(testMethod.getStatus())) {
-            finalResults.getSkippedConfigs().add(testMethod);
-         }
-      } else {
-         if ("FAIL".equals(testMethod.getStatus())) {
-             //If its a failed method, with its previous result as PASS, change its status to CaseResult.Status.REGRESSION 
-             if ((testMethod.getAge() == 1) && (testMethod.getParent().getOwner().getPreviousBuild() != null) && 
-                    (testMethod.getParent().getOwner().getPreviousBuild().getTestResultAction() != null)) {                 
-                 Collection<? extends TestResult> passed = ((TestNGResult)testMethod.getParent().getOwner().getPreviousBuild().getTestResultAction().getResult()).getPassedTests();
-                 Collection<? extends TestResult> failed = ((TestNGResult)testMethod.getParent().getOwner().getPreviousBuild().getTestResultAction().getResult()).getFailedTests();                 
-                 for (TestResult p : passed) {
-                     if (currentClass.getPkgName().equals(((ClassResult)p.getParent()).getPkgName()) && currentClass.getName().equals(p.getParent().getName()) && p.getName().equals(testMethod.getName())) {
-                         List<String> thisParams = testMethod.getParameters();
-                         List<String> pastParams = ((MethodResult)p).getParameters();
-                         if (((thisParams == null) && (pastParams == null)) || (thisParams.equals(pastParams))) {
-                             testMethod.setStatus(CaseResult.Status.REGRESSION);
-                         }
-                     }
-                 }
-                 for (TestResult f : failed) {
-                     if ("REGRESSION".equals(((MethodResult)f).getStatus()) && f.getName().equals(testMethod.getName())) {
-                         List<String> thisParams = testMethod.getParameters();
-                         List<String> pastParams = ((MethodResult)f).getParameters();
-                         if (((thisParams == null) && (pastParams == null)) || (thisParams.equals(pastParams))) {
-                             testMethod.setStatus(CaseResult.Status.REGRESSION);
-                         }
-                     }                        
-                 }                
-             }
-            finalResults.getFailedTests().add(testMethod);
-         } else if ("SKIP".equals(testMethod.getStatus())) {
-            finalResults.getSkippedTests().add(testMethod);
-         } else if ("PASS".equals(testMethod.getStatus())) {
-             //If its a passe method, with its previous result as FAIL, change its status to CaseResult.Status.FIXED             
-             if ((testMethod.getAge() == 1) && (testMethod.getParent().getOwner().getPreviousBuild() != null) && 
-                     (testMethod.getParent().getOwner().getPreviousBuild().getTestResultAction() != null)) {                 
-                Collection<? extends TestResult> failed = ((TestNGResult)testMethod.getParent().getOwner().getPreviousBuild().getTestResultAction().getResult()).getFailedTests();
-                for (TestResult f: failed) {
-                    if (currentClass.getPkgName().equals(((ClassResult)f.getParent()).getPkgName()) && currentClass.getName().equals(f.getParent().getName()) && f.getName().equals(testMethod.getName())){
-                        List<String> thisParams = testMethod.getParameters();
-                        List<String> pastParams = ((MethodResult)f).getParameters();
-                        if (((thisParams == null) && (pastParams == null)) || (thisParams.equals(pastParams))) {
-                            testMethod.setStatus(CaseResult.Status.FIXED);
+        if (testMethod.isConfig()) {
+            if ("FAIL".equals(testMethod.getStatus())) {
+                finalResults.getFailedConfigs().add(testMethod);
+            } else if ("SKIP".equals(testMethod.getStatus())) {
+                finalResults.getSkippedConfigs().add(testMethod);
+            }
+        } else {
+            if ("FAIL".equals(testMethod.getStatus())) {
+                // If its a failed method, with its previous result as PASS, change its status to
+                // CaseResult.Status.REGRESSION
+                if ((testMethod.getAge() == 1) && (testMethod.getParent().getOwner().number != 0)
+                        && (testMethod.getParent().getOwner().getPreviousBuild() != null)
+                        && (testMethod.getParent().getOwner().getPreviousBuild().getTestResultAction() != null)) {
+                    Collection<? extends TestResult> passed = ((TestNGResult) testMethod.getParent().getOwner()
+                            .getPreviousBuild().getTestResultAction().getResult()).getPassedTests();
+                    Collection<? extends TestResult> failed = ((TestNGResult) testMethod.getParent().getOwner()
+                            .getPreviousBuild().getTestResultAction().getResult()).getFailedTests();
+                    for (TestResult p : passed) {
+                        if (currentClass.getPkgName().equals(((ClassResult) p.getParent()).getPkgName())
+                                && currentClass.getName().equals(p.getParent().getName())
+                                && p.getName().equals(testMethod.getName())) {
+                            List<String> thisParams = testMethod.getParameters();
+                            List<String> pastParams = ((MethodResult) p).getParameters();
+                            if (((thisParams == null) && (pastParams == null)) || (thisParams.equals(pastParams))) {
+                                testMethod.setStatus(CaseResult.Status.REGRESSION);
+                            }
                         }
                     }
-                }                
-             }
-            finalResults.getPassedTests().add(testMethod);
-         }
-      }
-   }
+                    for (TestResult f : failed) {
+                        if ("REGRESSION".equals(((MethodResult) f).getStatus())
+                                && f.getName().equals(testMethod.getName())) {
+                            List<String> thisParams = testMethod.getParameters();
+                            List<String> pastParams = ((MethodResult) f).getParameters();
+                            if (((thisParams == null) && (pastParams == null)) || (thisParams.equals(pastParams))) {
+                                testMethod.setStatus(CaseResult.Status.REGRESSION);
+                            }
+                        }
+                    }
+                }
+                finalResults.getFailedTests().add(testMethod);
+            } else if ("SKIP".equals(testMethod.getStatus())) {
+                finalResults.getSkippedTests().add(testMethod);
+            } else if ("PASS".equals(testMethod.getStatus())) {
+                // If its a passe method, with its previous result as FAIL, change its status to CaseResult.Status.FIXED
+                if ((testMethod.getAge() == 1) && (testMethod.getParent().getOwner().number != 0)
+                        && (testMethod.getParent().getOwner().getPreviousBuild() != null)
+                        && (testMethod.getParent().getOwner().getPreviousBuild().getTestResultAction() != null)) {
+                    Collection<? extends TestResult> failed = ((TestNGResult) testMethod.getParent().getOwner()
+                            .getPreviousBuild().getTestResultAction().getResult()).getFailedTests();
+                    for (TestResult f : failed) {
+                        if (currentClass.getPkgName().equals(((ClassResult) f.getParent()).getPkgName())
+                                && currentClass.getName().equals(f.getParent().getName())
+                                && f.getName().equals(testMethod.getName())) {
+                            List<String> thisParams = testMethod.getParameters();
+                            List<String> pastParams = ((MethodResult) f).getParameters();
+                            if (((thisParams == null) && (pastParams == null)) || (thisParams.equals(pastParams))) {
+                                testMethod.setStatus(CaseResult.Status.FIXED);
+                            }
+                        }
+                    }
+                }
+                finalResults.getPassedTests().add(testMethod);
+            }
+        }
+    }
 
     private String get(String attr) {
         return xmlPullParser.getAttributeValue(null, attr);
